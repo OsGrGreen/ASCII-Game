@@ -4,6 +4,7 @@ use sdl2::pixels::{Color,PixelFormatEnum};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 use sdl2::surface::Surface;
+use sdl2::gfx::framerate::FPSManager;
 use std::time::Duration;
 use std::io::{self, Write};
 use std::{thread, time};
