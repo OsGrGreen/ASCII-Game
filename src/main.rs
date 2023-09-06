@@ -45,9 +45,10 @@ fn main() {
 
     let texture_creator = canvas.texture_creator();
     
-    let _surface = Surface::new(512,512,PixelFormatEnum::RGB24).unwrap();
+    let surface = Surface::load_bmp("cga8.bmp").unwrap();
+    let font_texture = surface.as_texture(&texture_creator).unwrap();
     let mut texture = texture_creator
-    .create_texture_streaming(PixelFormatEnum::RGB24, 256, 256)
+    .create_texture_streaming(PixelFormatEnum::RGBA8888, 256, 256)
     .map_err(|e| e.to_string()).unwrap();
     unsafe{
         texture.gl_bind_texture();
@@ -77,13 +78,15 @@ fn main() {
         let now = Instant::now();
         i = (i + 1) % 255;
         canvas.clear();
+        println!("{:#?}",texture.query());
         texture.with_lock(None, |buffer:&mut [u8], pitch: usize| {
             for y in 0..256{
                 for x in 0..256{
-                    let offset = y*pitch + x * 3;
-                    buffer[offset] = i as u8;
-                    buffer[offset + 1] = y as u8;
-                    buffer[offset + 2] = 0;
+                    let offset = y*pitch + x * 4;
+                    buffer[offset] = 100 as u8;
+                    buffer[offset + 1] = 0 as u8;
+                    buffer[offset + 2] = x as u8;
+                    buffer[offset + 3] = i as u8;
                 }
             }
         }).unwrap();
@@ -96,6 +99,7 @@ fn main() {
                 _ => {}
             }
         }
+        canvas.copy(&font_texture, None, None).unwrap();
         canvas.copy(&texture, None, None).unwrap();
         canvas.present();
         // Cap to 60 fps
