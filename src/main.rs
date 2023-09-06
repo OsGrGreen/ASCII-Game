@@ -3,6 +3,7 @@ extern crate sdl2;
 use sdl2::pixels::{Color,PixelFormatEnum};
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::rect::Rect;
 use sdl2::surface::Surface;
 use std::time::Duration;
 use std::io::{self, Write};
@@ -16,6 +17,10 @@ fn find_sdl_gl_driver() -> Option<u32> {
         }
     }
     None
+}
+
+fn settcolor(r: u8, g: u8, b:u8, tex:&mut sdl2::render::Texture<'_>){
+    tex.set_color_mod(r, g, b);
 }
 
 fn main() {
@@ -46,7 +51,7 @@ fn main() {
     let texture_creator = canvas.texture_creator();
     
     let surface = Surface::load_bmp("cga8.bmp").unwrap();
-    let font_texture = surface.as_texture(&texture_creator).unwrap();
+    let mut font_texture = surface.as_texture(&texture_creator).unwrap();
     let mut texture = texture_creator
     .create_texture_streaming(PixelFormatEnum::RGBA8888, 256, 256)
     .map_err(|e| e.to_string()).unwrap();
@@ -78,7 +83,7 @@ fn main() {
         let now = Instant::now();
         i = (i + 1) % 255;
         canvas.clear();
-        println!("{:#?}",texture.query());
+        //println!("{:#?}",texture.query());
         texture.with_lock(None, |buffer:&mut [u8], pitch: usize| {
             for y in 0..256{
                 for x in 0..256{
@@ -87,6 +92,7 @@ fn main() {
                     buffer[offset + 1] = 0 as u8;
                     buffer[offset + 2] = x as u8;
                     buffer[offset + 3] = i as u8;
+                    settcolor(x as u8, y as u8, i as u8, &mut font_texture);
                 }
             }
         }).unwrap();
@@ -99,11 +105,18 @@ fn main() {
                 _ => {}
             }
         }
-        canvas.copy(&font_texture, None, None).unwrap();
+
         canvas.copy(&texture, None, None).unwrap();
+
+        for i in 0..100{
+            for j in 0..75{
+                canvas.copy(&font_texture, Rect::new(16+8,0,8,8), Rect::new(8*i,8*j,8,8)).unwrap();
+            }
+        }
+        
         canvas.present();
         // Cap to 60 fps
-        ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        //::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
         let fps = 1000/cmp::max(1,(now.elapsed().as_micros()/1000));
         println!("FPS is: {}", fps);
     }
