@@ -6,7 +6,8 @@ use sdl2::keyboard::Keycode;
 use sdl2::surface::Surface;
 use std::time::Duration;
 use std::io::{self, Write};
-use std::{thread, time};
+use std::{thread, time::*};
+use std::cmp;
 
 fn find_sdl_gl_driver() -> Option<u32> {
     for (index, item) in sdl2::render::drivers().enumerate() {
@@ -71,6 +72,7 @@ fn main() {
     let mut event_pump = sdl_context.event_pump().unwrap();
     let mut i = 0;
    'running: loop {
+        let now = Instant::now();
         i = (i + 1) % 255;
         canvas.clear();
         texture.with_lock(None, |buffer:&mut [u8], pitch: usize| {
@@ -94,7 +96,10 @@ fn main() {
         }
         canvas.copy(&texture, None, None).unwrap();
         canvas.present();
+        // Cap to 60 fps
         ::std::thread::sleep(Duration::new(0, 1_000_000_000u32 / 60));
+        let fps = 1000/cmp::max(1,(now.elapsed().as_micros()/1000));
+        println!("FPS is: {}", fps);
     }
 
     /*let stdout = io::stdout(); // get the global stdout entity
