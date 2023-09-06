@@ -35,6 +35,8 @@ fn main() {
 
     let mut canvas = window.into_canvas()
         .index(find_sdl_gl_driver().unwrap())
+        .target_texture()
+        .accelerated()
         .build()
         .unwrap();
     canvas.set_draw_color(Color::RGB(0, 255, 255));
@@ -50,7 +52,7 @@ fn main() {
     unsafe{
         texture.gl_bind_texture();
     }
-    
+
     
     canvas.present();
     /* For using openGL directly
