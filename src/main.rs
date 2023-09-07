@@ -1,4 +1,5 @@
 extern crate sdl2;
+extern crate gl;
 
 use sdl2::pixels::{Color,PixelFormatEnum};
 use sdl2::event::Event;
@@ -55,9 +56,9 @@ fn main() {
     let mut texture = texture_creator
     .create_texture_streaming(PixelFormatEnum::RGBA8888, 256, 256)
     .map_err(|e| e.to_string()).unwrap();
-    unsafe{
-        texture.gl_bind_texture();
-    }
+    //unsafe{
+        //texture.gl_bind_texture();
+    //}
 
     
     canvas.present();
@@ -81,21 +82,8 @@ fn main() {
     let mut i = 0;
    'running: loop {
         let now = Instant::now();
-        i = (i + 1) % 255;
+        i = (i % 255)+1;
         canvas.clear();
-        //println!("{:#?}",texture.query());
-        texture.with_lock(None, |buffer:&mut [u8], pitch: usize| {
-            for y in 0..256{
-                for x in 0..256{
-                    let offset = y*pitch + x * 4;
-                    buffer[offset] = 100 as u8;
-                    buffer[offset + 1] = 0 as u8;
-                    buffer[offset + 2] = x as u8;
-                    buffer[offset + 3] = i as u8;
-                    settcolor(x as u8, y as u8, i as u8, &mut font_texture);
-                }
-            }
-        }).unwrap();
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} |
@@ -108,9 +96,10 @@ fn main() {
 
         canvas.copy(&texture, None, None).unwrap();
 
-        for i in 0..100{
-            for j in 0..75{
-                canvas.copy(&font_texture, Rect::new(16+8,0,8,8), Rect::new(8*i,8*j,8,8)).unwrap();
+        for x in 0..100{
+            for y in 0..75{
+                settcolor(x as u8, y as u8, ((x*y)/i) as u8, &mut font_texture);
+                canvas.copy(&font_texture, Rect::new(16+8,0,8,8), Rect::new(8*x,8*y,8,8)).unwrap();
             }
         }
         
